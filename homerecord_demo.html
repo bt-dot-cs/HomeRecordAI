@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HomeRecord AI — Demo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy:      #1E2D5A;
+      --navy-dark: #141E3C;
+      --navy-mid:  #243266;
+      --terra:     #B85042;
+      --terra-lt:  #C96B5E;
+      --sand:      #E7E8D1;
+      --sage:      #A7BEAE;
+      --white:     #FFFFFF;
+      --off-white: #F5F4F0;
+      --gray:      #64748B;
+      --light-gray:#E2E8F0;
+      --black:     #1A1A2E;
+      --warn:      #E8A45A;
+      --success:   #4A9B6F;
+      --danger:    #C0392B;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--off-white);
+      color: var(--black);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--navy-dark);
+      padding: 0 2.5rem;
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 3px solid var(--terra);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--terra);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-icon svg { width: 22px; height: 22px; fill: white; }
+
+    .logo-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: 0.02em;
+    }
+
+    .logo-text span { color: var(--terra); }
+
+    .header-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--sage);
+      background: rgba(167,190,174,0.12);
+      border: 1px solid rgba(167,190,174,0.3);
+      padding: 0.25rem 0.7rem;
+      border-radius: 20px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ── LAYOUT ── */
+    .app {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      min-height: calc(100vh - 68px);
+    }
+
+    /* ── SIDEBAR ── */
+    sidebar {
+      background: var(--navy);
+      padding: 2rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      border-right: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .sidebar-section-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-bottom: 0.75rem;
+    }
+
+    .doc-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+    .doc-item {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.65rem 0.9rem;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.07);
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .doc-item:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.15); }
+    .doc-item.active { background: rgba(184,80,66,0.2); border-color: var(--terra); }
+
+    .doc-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.8rem;
+    }
+
+    .doc-icon.clean { background: rgba(74,155,111,0.2); }
+    .doc-icon.flagged { background: rgba(232,164,90,0.25); }
+    .doc-icon.pending { background: rgba(255,255,255,0.08); }
+
+    .doc-name {
+      font-size: 0.78rem;
+      color: var(--sand);
+      font-weight: 500;
+      line-height: 1.3;
+      flex: 1;
+    }
+
+    .pii-badge {
+      font-size: 0.58rem;
+      font-weight: 700;
+      padding: 0.15rem 0.45rem;
+      border-radius: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      flex-shrink: 0;
+    }
+
+    .pii-badge.warn { background: rgba(232,164,90,0.25); color: var(--warn); border: 1px solid rgba(232,164,90,0.4); }
+    .pii-badge.ok   { background: rgba(74,155,111,0.2);  color: var(--success); border: 1px solid rgba(74,155,111,0.35); }
+
+    .audience-list { display: flex; flex-direction: column; gap: 0.45rem; }
+
+    .audience-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.6rem 0.9rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.07);
+      background: rgba(255,255,255,0.04);
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--sand);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      text-align: left;
+      width: 100%;
+    }
+
+    .audience-btn:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.15); }
+    .audience-btn.active { background: rgba(184,80,66,0.18); border-color: var(--terra); color: var(--white); }
+
+    .audience-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .run-btn {
+      background: var(--terra);
+      color: var(--white);
+      border: none;
+      padding: 0.85rem 1.25rem;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      width: 100%;
+      letter-spacing: 0.02em;
+    }
+
+    .run-btn:hover { background: var(--terra-lt); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(184,80,66,0.35); }
+    .run-btn:active { transform: translateY(0); }
+    .run-btn:disabled { background: #4A5568; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* ── MAIN ── */
+    main {
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    /* ── PIPELINE STRIP ── */
+    .pipeline {
+      background: var(--navy-dark);
+      padding: 1.25rem 2.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      overflow-x: auto;
+    }
+
+    .pipeline-step {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-shrink: 0;
+    }
+
+    .step-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.45rem 1rem;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.5);
+      transition: all 0.4s;
+      white-space: nowrap;
+    }
+
+    .step-pill.active { background: rgba(184,80,66,0.2); border-color: var(--terra); color: var(--white); }
+    .step-pill.done   { background: rgba(74,155,111,0.15); border-color: var(--success); color: var(--sage); }
+
+    .step-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+    .pipeline-arrow {
+      color: rgba(255,255,255,0.2);
+      font-size: 1.1rem;
+      padding: 0 0.5rem;
+      flex-shrink: 0;
+    }
+
+    /* ── CONTENT AREA ── */
+    .content { flex: 1; padding: 2.5rem; display: flex; flex-direction: column; gap: 2rem; }
+
+    /* ── PII ALERT PANEL ── */
+    .pii-panel {
+      background: var(--white);
+      border-radius: 14px;
+      border: 1px solid var(--light-gray);
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      display: none;
+    }
+
+    .pii-panel.visible { display: block; animation: slideDown 0.35s ease; }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .pii-header {
+      background: linear-gradient(135deg, #7B3F00, #B85042);
+      padding: 1.1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .pii-header-icon { font-size: 1.3rem; }
+
+    .pii-header-text h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      color: var(--white);
+      font-weight: 700;
+    }
+
+    .pii-header-text p { font-size: 0.75rem; color: rgba(255,255,255,0.75); margin-top: 0.1rem; }
+
+    .pii-findings { padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
+
+    .pii-finding {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 0.85rem 1rem;
+      border-radius: 8px;
+      background: #FFF8F5;
+      border: 1px solid #FDDDD5;
+    }
+
+    .finding-severity {
+      font-size: 0.6rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 0.05rem;
+    }
+
+    .sev-critical { background: #FDDDD5; color: #C0392B; }
+    .sev-high     { background: #FEF3C7; color: #92400E; }
+    .sev-medium   { background: #EFF6FF; color: #1E40AF; }
+
+    .finding-detail { flex: 1; }
+    .finding-field { font-size: 0.82rem; font-weight: 600; color: var(--black); }
+    .finding-desc  { font-size: 0.75rem; color: var(--gray); margin-top: 0.15rem; }
+
+    .finding-action { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+
+    .action-btn {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .btn-redact  { background: var(--navy); color: white; }
+    .btn-redact:hover { background: var(--navy-mid); }
+    .btn-exclude { background: #FEE2E2; color: #991B1B; }
+    .btn-exclude:hover { background: #FECACA; }
+    .btn-allow   { background: #ECFDF5; color: #065F46; }
+    .btn-allow:hover { background: #D1FAE5; }
+
+    .pii-actions {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--light-gray);
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      background: #FAFAFA;
+    }
+
+    .pii-actions p { font-size: 0.78rem; color: var(--gray); flex: 1; }
+
+    .btn-proceed {
+      background: var(--success);
+      color: white;
+      border: none;
+      padding: 0.55rem 1.25rem;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-proceed:hover { background: #3D8A60; }
+
+    .btn-abort {
+      background: transparent;
+      color: var(--danger);
+      border: 1px solid var(--danger);
+      padding: 0.55rem 1.25rem;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-abort:hover { background: #FEE2E2; }
+
+    /* ── OUTPUT PANELS ── */
+    .output-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+
+    .output-card {
+      background: var(--white);
+      border-radius: 14px;
+      border: 1px solid var(--light-gray);
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      min-height: 280px;
+    }
+
+    .card-header {
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      border-bottom: 1px solid var(--light-gray);
+    }
+
+    .card-header-icon {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .card-title { font-family: 'Playfair Display', serif; font-size: 0.95rem; font-weight: 700; color: var(--navy); }
+    .card-subtitle { font-size: 0.7rem; color: var(--gray); margin-top: 0.1rem; }
+
+    .card-status {
+      margin-left: auto;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.2rem 0.55rem;
+      border-radius: 20px;
+    }
+
+    .status-waiting  { background: var(--light-gray); color: var(--gray); }
+    .status-running  { background: rgba(184,80,66,0.15); color: var(--terra); }
+    .status-done     { background: rgba(74,155,111,0.15); color: var(--success); }
+
+    .card-body {
+      flex: 1;
+      padding: 1.25rem;
+      font-size: 0.8rem;
+      line-height: 1.7;
+      color: var(--gray);
+      overflow-y: auto;
+      max-height: 340px;
+    }
+
+    .card-body.populated { color: var(--black); }
+
+    .report-content h4 {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.88rem;
+      color: var(--navy);
+      margin: 0.85rem 0 0.35rem;
+      font-weight: 700;
+    }
+
+    .report-content h4:first-child { margin-top: 0; }
+
+    .report-content p { font-size: 0.78rem; margin-bottom: 0.4rem; color: #374151; }
+
+    .report-content .tag {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      margin: 0.1rem 0.15rem 0.1rem 0;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .tag-red    { background: #FEE2E2; color: #991B1B; }
+    .tag-yellow { background: #FEF3C7; color: #92400E; }
+    .tag-green  { background: #ECFDF5; color: #065F46; }
+    .tag-blue   { background: #EFF6FF; color: #1E40AF; }
+
+    /* ── HOME RECORD PANEL ── */
+    .home-record-panel {
+      background: var(--navy-dark);
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .home-record-header {
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .home-record-header h3 {
+      font-family: 'Playfair Display', serif;
+      color: var(--sand);
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .home-record-header p { font-size: 0.7rem; color: var(--sage); margin-top: 0.1rem; }
+
+    .json-viewer {
+      padding: 1.25rem 1.5rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: #94A3B8;
+      line-height: 1.8;
+      max-height: 280px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+
+    .json-key   { color: #93C5FD; }
+    .json-str   { color: #86EFAC; }
+    .json-num   { color: #FCA5A5; }
+    .json-bool  { color: #FDE68A; }
+
+    /* ── LOG ── */
+    .log-panel {
+      background: #0F172A;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .log-header {
+      padding: 0.75rem 1.25rem;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .log-header span {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--sage);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .log-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); animation: pulse 2s infinite; }
+
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    .log-body {
+      padding: 1rem 1.25rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      line-height: 1.9;
+      color: #64748B;
+      max-height: 160px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+    }
+
+    .log-line { display: flex; gap: 0.75rem; }
+    .log-time { color: #334155; flex-shrink: 0; }
+    .log-info  { color: #60A5FA; }
+    .log-warn  { color: #FBBF24; }
+    .log-error { color: #F87171; }
+    .log-ok    { color: #34D399; }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 200px;
+      gap: 0.75rem;
+      color: var(--light-gray);
+    }
+
+    .empty-icon { font-size: 2.5rem; opacity: 0.3; }
+    .empty-text { font-size: 0.8rem; color: var(--gray); text-align: center; }
+
+    /* ── SCROLLBARS ── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+    /* ── SPINNER ── */
+    .spinner {
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .spinner.visible { display: block; }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gray);
+      margin-bottom: -0.5rem;
+    }
+
+    /* ── UPLOAD ZONE ── */
+    .upload-zone {
+      border: 2px dashed rgba(167,190,174,0.35);
+      border-radius: 10px;
+      padding: 1.1rem 0.75rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: rgba(255,255,255,0.03);
+      position: relative;
+    }
+
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--terra);
+      background: rgba(184,80,66,0.07);
+    }
+
+    .upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .upload-icon { font-size: 1.4rem; margin-bottom: 0.3rem; }
+
+    .upload-label {
+      font-size: 0.72rem;
+      color: var(--sage);
+      line-height: 1.5;
+    }
+
+    .upload-label strong { color: var(--sand); display: block; margin-bottom: 0.15rem; }
+
+    .doc-count-badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 0.15rem 0.55rem;
+      border-radius: 20px;
+      background: rgba(184,80,66,0.2);
+      color: var(--terra);
+      border: 1px solid rgba(184,80,66,0.3);
+      margin-top: 0.5rem;
+    }
+
+    .doc-item-uploading {
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateX(-8px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .no-docs-hint {
+      font-size: 0.72rem;
+      color: rgba(167,190,174,0.5);
+      text-align: center;
+      padding: 0.75rem 0;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    </div>
+    <div class="logo-text">Home<span>Record</span> AI</div>
+  </div>
+  <div class="header-badge">MUSA Hackathon Demo · 2025</div>
+</header>
+
+<div class="app">
+
+  <!-- ── SIDEBAR ── -->
+  <sidebar>
+
+    <div>
+      <div class="sidebar-section-label" style="display:flex;align-items:center;justify-content:space-between;">
+        <span>Document Lake</span>
+        <span id="docCountBadge" style="display:none;" class="doc-count-badge">0 docs</span>
+      </div>
+
+      <!-- Upload Zone -->
+      <div class="upload-zone" id="uploadZone" style="margin-top:0.75rem;">
+        <input type="file" id="fileInput" multiple accept=".md,.txt,.pdf,.docx" />
+        <div class="upload-icon">📂</div>
+        <div class="upload-label">
+          <strong>Drop files or click to upload</strong>
+          .md · .txt · .pdf · .docx
+        </div>
+      </div>
+
+      <!-- Dynamic doc list -->
+      <div class="doc-list" id="docList" style="margin-top:0.75rem;">
+        <div class="no-docs-hint" id="noDocsHint">No documents uploaded yet</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="sidebar-section-label">Report Audience</div>
+      <div class="audience-list">
+        <button class="audience-btn active" data-audience="appraiser">
+          <div class="audience-dot" style="background:#93C5FD"></div>
+          Appraiser
+        </button>
+        <button class="audience-btn" data-audience="buyer">
+          <div class="audience-dot" style="background:#86EFAC"></div>
+          Potential Buyer
+        </button>
+        <button class="audience-btn" data-audience="inspector">
+          <div class="audience-dot" style="background:#FCA5A5"></div>
+          Insurance Inspector
+        </button>
+        <button class="audience-btn" data-audience="contractor">
+          <div class="audience-dot" style="background:#FDE68A"></div>
+          Contractor
+        </button>
+      </div>
+    </div>
+
+    <div style="margin-top:auto; display:flex; flex-direction:column; gap:0.75rem;">
+      <button class="run-btn" id="runBtn" onclick="runPipeline()" disabled style="background:#4A5568;cursor:not-allowed;">
+        <span id="runBtnText">▶ Run Pipeline</span>
+        <div class="spinner" id="runSpinner"></div>
+      </button>
+    </div>
+
+  </sidebar>
+
+  <!-- ── MAIN ── -->
+  <main>
+
+    <!-- Pipeline strip -->
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <div class="step-pill" id="step-ingest">
+          <div class="step-dot"></div> Ingest Documents
+        </div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="step-pill" id="step-pii">
+          <div class="step-dot"></div> PII Scan
+        </div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="step-pill" id="step-hil">
+          <div class="step-dot"></div> Human Review
+        </div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="step-pill" id="step-structure">
+          <div class="step-dot"></div> Structure Record
+        </div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="step-pill" id="step-report">
+          <div class="step-dot"></div> Generate Report
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- PII Alert -->
+      <div class="pii-panel" id="piiPanel">
+        <div class="pii-header">
+          <div class="pii-header-icon">🛡️</div>
+          <div class="pii-header-text">
+            <h3>PII Detected — Human Review Required</h3>
+            <p>Sensitive fields identified in 2 documents before structuring. Review and decide before proceeding.</p>
+          </div>
+        </div>
+        <div class="pii-findings">
+
+          <div class="pii-finding">
+            <div class="finding-severity sev-critical">Critical</div>
+            <div class="finding-detail">
+              <div class="finding-field">Social Security Numbers × 2 — Insurance Intake Form</div>
+              <div class="finding-desc">Primary applicant SSN (412-88-3291) and co-applicant SSN (398-54-7712) detected. These fields are not required for any report audience.</div>
+              <div class="finding-action">
+                <button class="action-btn btn-redact" onclick="resolveItem(this,'redact')">Redact Both</button>
+                <button class="action-btn btn-exclude" onclick="resolveItem(this,'exclude')">Exclude Document</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="pii-finding">
+            <div class="finding-severity sev-critical">Critical</div>
+            <div class="finding-detail">
+              <div class="finding-field">Bank Routing + Account Number — Insurance Intake Form</div>
+              <div class="finding-desc">Routing #036001808 and Account #7724419038 detected. Financial account data present.</div>
+              <div class="finding-action">
+                <button class="action-btn btn-redact" onclick="resolveItem(this,'redact')">Redact</button>
+                <button class="action-btn btn-exclude" onclick="resolveItem(this,'exclude')">Exclude Document</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="pii-finding">
+            <div class="finding-severity sev-high">High</div>
+            <div class="finding-detail">
+              <div class="finding-field">Credit Card Authorization — Electrical Work Order</div>
+              <div class="finding-desc">Visa card ending 4471 and authorization code VRE-AUTH-441892 detected. Payment references present.</div>
+              <div class="finding-action">
+                <button class="action-btn btn-redact" onclick="resolveItem(this,'redact')">Redact</button>
+                <button class="action-btn btn-allow" onclick="resolveItem(this,'allow')">Allow (Internal Only)</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="pii-finding">
+            <div class="finding-severity sev-medium">Medium</div>
+            <div class="finding-detail">
+              <div class="finding-field">Personal Email + Phone × 2 — Multiple Documents</div>
+              <div class="finding-desc">bjhartwell83@gmail.com and (267) 554-8801 appear in 2 documents.</div>
+              <div class="finding-action">
+                <button class="action-btn btn-redact" onclick="resolveItem(this,'redact')">Redact</button>
+                <button class="action-btn btn-allow" onclick="resolveItem(this,'allow')">Allow</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="pii-actions">
+          <p id="piiStatus">Resolve all items above before proceeding.</p>
+          <button class="btn-abort" onclick="abortPipeline()">Abort Pipeline</button>
+          <button class="btn-proceed" id="proceedBtn" onclick="proceedAfterHIL()" disabled>Proceed →</button>
+        </div>
+      </div>
+
+      <!-- Log -->
+      <div>
+        <div class="section-label">Pipeline Log</div>
+        <div class="log-panel" style="margin-top:0.85rem;">
+          <div class="log-header">
+            <div class="log-dot" id="logDot"></div>
+            <span>System Output</span>
+          </div>
+          <div class="log-body" id="logBody">
+            <div class="log-line">
+              <span class="log-time">00:00:00</span>
+              <span class="log-info">HomeRecord AI initialized. 6 documents in data lake. Awaiting pipeline trigger.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Home Record JSON -->
+      <div id="homeRecordSection" style="display:none;">
+        <div class="section-label">Structured Home Record</div>
+        <div class="home-record-panel" style="margin-top:0.85rem;">
+          <div class="home-record-header">
+            <div>
+              <h3>home_record.json</h3>
+              <p>Layer 1 output — normalized from 6 source documents</p>
+            </div>
+            <div class="pii-badge ok" style="margin-left:auto;">PII Resolved</div>
+          </div>
+          <div class="json-viewer" id="jsonViewer"></div>
+        </div>
+      </div>
+
+      <!-- Report Output -->
+      <div id="reportSection" style="display:none;">
+        <div class="section-label" id="reportLabel">Generated Report</div>
+        <div class="output-grid" style="margin-top:0.85rem;">
+          <div class="output-card" id="reportCard">
+            <div class="card-header">
+              <div class="card-header-icon" id="reportIcon" style="background:#EFF6FF;">🏠</div>
+              <div>
+                <div class="card-title" id="reportTitle">Appraiser Report</div>
+                <div class="card-subtitle" id="reportSubtitle">Structured condition data for valuation</div>
+              </div>
+              <div class="card-status status-done" id="reportStatus">Generated</div>
+            </div>
+            <div class="card-body populated" id="reportBody"></div>
+          </div>
+
+          <div class="output-card">
+            <div class="card-header">
+              <div class="card-header-icon" style="background:#F0FDF4;">🔒</div>
+              <div>
+                <div class="card-title">Data Governance</div>
+                <div class="card-subtitle">Fields included vs. excluded for this audience</div>
+              </div>
+              <div class="card-status status-done">Applied</div>
+            </div>
+            <div class="card-body populated" id="governanceBody"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+  // ── Known PII filenames (matched against uploaded filenames) ──
+  const PII_FILENAMES = ['insurance_intake_form', 'electrical_work_order'];
+
+  // ── Doc icon map by filename keyword ──
+  function docIcon(name) {
+    const n = name.toLowerCase();
+    if (n.includes('inspection'))  return { icon: '📋', label: 'Inspection Report' };
+    if (n.includes('invoice'))     return { icon: '🧾', label: 'Contractor Invoice' };
+    if (n.includes('warranty') || n.includes('appliance')) return { icon: '📦', label: 'Appliance Warranty' };
+    if (n.includes('permit'))      return { icon: '🏛️', label: 'Permits & Records' };
+    if (n.includes('insurance'))   return { icon: '⚠️', label: 'Insurance Intake Form' };
+    if (n.includes('electrical'))  return { icon: '⚠️', label: 'Electrical Work Order' };
+    return { icon: '📄', label: name };
+  }
+
+  function isPII(filename) {
+    const n = filename.toLowerCase().replace(/\.[^.]+$/, '');
+    return PII_FILENAMES.some(p => n.includes(p.replace('_', '')));
+  }
+
+  let uploadedFiles = [];
+
+  function handleFiles(files) {
+    const hint = document.getElementById('noDocsHint');
+    const list = document.getElementById('docList');
+    const badge = document.getElementById('docCountBadge');
+
+    Array.from(files).forEach(file => {
+      // Deduplicate
+      if (uploadedFiles.find(f => f.name === file.name)) return;
+      uploadedFiles.push(file);
+
+      const pii = isPII(file.name);
+      const meta = docIcon(file.name);
+
+      const item = document.createElement('div');
+      item.className = 'doc-item doc-item-uploading';
+      item.dataset.doc = file.name;
+      item.innerHTML = `
+        <div class="doc-icon ${pii ? 'flagged' : 'clean'}">${meta.icon}</div>
+        <div class="doc-name">${meta.label}</div>
+        <div class="pii-badge ${pii ? 'warn' : 'ok'}">${pii ? 'PII' : 'Clean'}</div>
+      `;
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.doc-item').forEach(d => d.classList.remove('active'));
+        item.classList.add('active');
+      });
+
+      // Remove hint, add item
+      if (hint.parentNode) hint.remove();
+      list.appendChild(item);
+
+      log(`Uploaded: ${file.name} (${(file.size/1024).toFixed(1)} KB) — ${pii ? '⚠ PII flags expected' : 'no PII flags expected'}`, pii ? 'warn' : 'info');
+    });
+
+    // Update badge and run button
+    badge.textContent = `${uploadedFiles.length} doc${uploadedFiles.length !== 1 ? 's' : ''}`;
+    badge.style.display = 'inline-block';
+
+    if (uploadedFiles.length > 0) {
+      const btn = document.getElementById('runBtn');
+      btn.disabled = false;
+      btn.style.background = '';
+      btn.style.cursor = '';
+    }
+  }
+
+  // File input change
+  document.getElementById('fileInput').addEventListener('change', function() {
+    handleFiles(this.files);
+    this.value = ''; // reset so same files can be re-added after clearing
+  });
+
+  // Drag and drop
+  const zone = document.getElementById('uploadZone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    handleFiles(e.dataTransfer.files);
+  });
+  // ── State ──
+  let selectedAudience = 'appraiser';
+  let piiResolved = 0;
+  const piiTotal = 4;
+  let pipelineRunning = false;
+
+  // ── Doc items ──
+  document.querySelectorAll('.doc-item').forEach(el => {
+    el.addEventListener('click', () => {
+      document.querySelectorAll('.doc-item').forEach(d => d.classList.remove('active'));
+      el.classList.add('active');
+    });
+  });
+
+  // ── Audience buttons ──
+  document.querySelectorAll('.audience-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.audience-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedAudience = btn.dataset.audience;
+    });
+  });
+
+  // ── Log helper ──
+  function log(msg, type = 'info') {
+    const body = document.getElementById('logBody');
+    const now = new Date();
+    const t = now.toTimeString().slice(0,8);
+    const line = document.createElement('div');
+    line.className = 'log-line';
+    line.innerHTML = `<span class="log-time">${t}</span><span class="log-${type}">${msg}</span>`;
+    body.appendChild(line);
+    body.scrollTop = body.scrollHeight;
+  }
+
+  // ── Step state ──
+  function setStep(id, state) {
+    const el = document.getElementById('step-' + id);
+    el.className = 'step-pill ' + state;
+  }
+
+  // ── Delay ──
+  const delay = ms => new Promise(r => setTimeout(r, ms));
+
+  // ── PII resolution ──
+  function resolveItem(btn, action) {
+    const finding = btn.closest('.pii-finding');
+    const actionBtns = finding.querySelectorAll('.action-btn');
+    actionBtns.forEach(b => { b.disabled = true; b.style.opacity = '0.4'; });
+
+    const label = { redact: '✓ Redacted', exclude: '✗ Excluded', allow: '✓ Allowed' }[action];
+    const colors = { redact: '#1E2D5A', exclude: '#991B1B', allow: '#065F46' };
+    const tag = document.createElement('span');
+    tag.style.cssText = `font-size:0.7rem;font-weight:700;padding:0.2rem 0.6rem;border-radius:4px;color:white;background:${colors[action]};`;
+    tag.textContent = label;
+    finding.querySelector('.finding-action').appendChild(tag);
+
+    piiResolved++;
+    const remaining = piiTotal - piiResolved;
+    document.getElementById('piiStatus').textContent = remaining > 0
+      ? `${remaining} item${remaining > 1 ? 's' : ''} remaining.`
+      : 'All items resolved. Ready to proceed.';
+
+    if (piiResolved >= piiTotal) {
+      document.getElementById('proceedBtn').disabled = false;
+      log('All PII items resolved by owner. Human-in-the-loop checkpoint passed.', 'ok');
+    } else {
+      log(`PII item ${action}ed. ${remaining} remaining.`, 'warn');
+    }
+  }
+
+  // ── Abort ──
+  function abortPipeline() {
+    document.getElementById('piiPanel').classList.remove('visible');
+    document.getElementById('runBtn').disabled = false;
+    document.getElementById('runBtnText').textContent = '▶ Run Pipeline';
+    document.getElementById('runSpinner').classList.remove('visible');
+    pipelineRunning = false;
+    piiResolved = 0;
+    log('Pipeline aborted by owner. No data processed.', 'error');
+    ['ingest','pii','hil','structure','report'].forEach(s => setStep(s, ''));
+  }
+
+  // ── Proceed after HIL ──
+  async function proceedAfterHIL() {
+    document.getElementById('piiPanel').classList.remove('visible');
+    setStep('hil', 'done');
+    log('Human review complete. Proceeding to structuring agent.', 'ok');
+    await delay(600);
+
+    setStep('structure', 'active');
+    log('Layer 1 · Structuring agent extracting fields from 6 documents...', 'info');
+    await delay(1800);
+    log('Merging into unified home_record.json...', 'info');
+    await delay(1000);
+    setStep('structure', 'done');
+    log('home_record.json generated. 47 fields extracted.', 'ok');
+
+    showHomeRecord();
+    await delay(700);
+    await generateReport();
+  }
+
+  // ── Main pipeline ──
+  async function runPipeline() {
+    if (pipelineRunning) return;
+    pipelineRunning = true;
+    piiResolved = 0;
+
+    // Reset UI
+    document.getElementById('runBtn').disabled = true;
+    document.getElementById('runBtnText').textContent = 'Running...';
+    document.getElementById('runSpinner').classList.add('visible');
+    document.getElementById('homeRecordSection').style.display = 'none';
+    document.getElementById('reportSection').style.display = 'none';
+    document.getElementById('piiPanel').classList.remove('visible');
+    document.getElementById('proceedBtn').disabled = true;
+    ['ingest','pii','hil','structure','report'].forEach(s => setStep(s, ''));
+
+    // Step 1 — Ingest
+    setStep('ingest', 'active');
+    log(`Scanning data lake — ${uploadedFiles.length} document${uploadedFiles.length !== 1 ? 's' : ''} detected.`, 'info');
+    await delay(800);
+    uploadedFiles.forEach(f => log(`  · ${f.name}`, 'info'));
+    await delay(600);
+    setStep('ingest', 'done');
+    log('Ingestion complete. All documents loaded.', 'ok');
+
+    // Step 2 — PII scan
+    await delay(500);
+    setStep('pii', 'active');
+    log('Running PII detection scan across all documents...', 'info');
+    await delay(1200);
+    log('⚠ SSN detected in insurance_intake_form.md (×2)', 'warn');
+    await delay(400);
+    log('⚠ Bank routing + account number detected in insurance_intake_form.md', 'warn');
+    await delay(400);
+    log('⚠ Credit card authorization detected in electrical_work_order.md', 'warn');
+    await delay(400);
+    log('⚠ Personal contact info detected in 2 documents', 'warn');
+    await delay(400);
+    setStep('pii', 'done');
+    log('PII scan complete. 4 findings require owner review.', 'warn');
+
+    // Step 3 — HIL
+    await delay(600);
+    setStep('hil', 'active');
+    log('Pausing pipeline. Awaiting human-in-the-loop review...', 'warn');
+    document.getElementById('piiPanel').classList.add('visible');
+    document.getElementById('piiPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    // Pipeline pauses here — proceedAfterHIL() continues it
+  }
+
+  // ── Show Home Record ──
+  function showHomeRecord() {
+    const record = {
+      property: { address: "2847 Fernwood Drive, Philadelphia, PA 19103", year_built: 1923, sq_ft: 1840, zoning: "RSA-5", assessed_value: "$241,800", market_estimate: "$318,500–$334,000" },
+      structural: { foundation: "Fair — minor efflorescence", roof: { front: "Fair, 6–8yr remaining", rear_slate: "Poor — repaired Nov 2024", flat_epdm: "Replaced Nov 2024, 20yr warranty" }, exterior: "Brick masonry — tuckpointing complete" },
+      mechanical: { hvac: { type: "Gas forced air", brand: "Carrier", age: 15, status: "Service needed" }, electrical: { panel: "Square D QO 200A", replaced: "Dec 2024", permit: "EP-2024-0044821 PASSED" }, plumbing: { supply: "Copper", drain: "Cast iron + PVC", water_heater: "State 40gal, age 7yr" } },
+      permits: { open: ["Kitchen exhaust — pending review"], closed: ["RF-2024-0038104 Roofing", "EP-2024-0044821 Electrical"] },
+      pii_fields_redacted: ["SSN ×2", "Bank routing/account", "Card auth code", "Personal email/phone"],
+      appliances: { included: 5, oldest: "Refrigerator (2016)", newest: "Dishwasher (2022)" }
+    };
+
+    const json = JSON.stringify(record, null, 2)
+      .replace(/"([^"]+)":/g, '<span class="json-key">"$1"</span>:')
+      .replace(/: "([^"]+)"/g, ': <span class="json-str">"$1"</span>')
+      .replace(/: (\d+)/g, ': <span class="json-num">$1</span>')
+      .replace(/: (true|false)/g, ': <span class="json-bool">$1</span>');
+
+    document.getElementById('jsonViewer').innerHTML = json;
+    document.getElementById('homeRecordSection').style.display = 'block';
+  }
+
+  // ── Generate Report ──
+  async function generateReport() {
+    setStep('report', 'active');
+    log(`Layer 2 · Routing to ${selectedAudience} agent...`, 'info');
+    await delay(1200);
+    log(`Applying context filter — audience: ${selectedAudience}`, 'info');
+    await delay(800);
+    log(`Generating ${selectedAudience} report...`, 'info');
+    await delay(1500);
+    setStep('report', 'done');
+    log(`Report generated successfully for audience: ${selectedAudience}`, 'ok');
+
+    const reports = {
+      appraiser: {
+        title: "Appraiser Report",
+        icon: "🏠",
+        subtitle: "Structured condition data for valuation",
+        iconBg: "#EFF6FF",
+        body: `<div class="report-content">
+          <h4>Property Overview</h4>
+          <p>2847 Fernwood Drive, Philadelphia PA 19103 · RSA-5 · 1923 · 1,840 sq ft · 16×62 ft lot</p>
+          <p>Assessed: $241,800 · Market Estimate: $318,500–$334,000</p>
+          <h4>Structural Condition</h4>
+          <p><span class="tag tag-yellow">Fair</span> Foundation — efflorescence, no active intrusion</p>
+          <p><span class="tag tag-green">Repaired</span> Roof — slate repaired, EPDM replaced Nov 2024 (20yr warranty)</p>
+          <p><span class="tag tag-green">Complete</span> Tuckpointing — 42 linear ft, Nov 2024</p>
+          <h4>Mechanical Systems</h4>
+          <p><span class="tag tag-yellow">Age 15yr</span> HVAC — Carrier gas forced air, service needed</p>
+          <p><span class="tag tag-green">Upgraded</span> Electrical — Square D 200A, Dec 2024, permit passed</p>
+          <p><span class="tag tag-yellow">Age 7yr</span> Water Heater — monitor, plan replacement 2026–27</p>
+          <h4>Permit Status</h4>
+          <p><span class="tag tag-green">Closed</span> Roofing RF-2024-0038104 · <span class="tag tag-green">Closed</span> Electrical EP-2024-0044821</p>
+          <p><span class="tag tag-yellow">Open</span> Kitchen exhaust — permit submitted, under review</p>
+        </div>`,
+        governance: `<div class="report-content">
+          <h4>✓ Fields Included</h4>
+          <p>Property address, year built, sq footage, zoning, assessed value, market estimate, structural condition ratings, mechanical ages, permit numbers and status, open violations, improvement history</p>
+          <h4>✗ Fields Excluded</h4>
+          <p>Owner full name, insurance policy/premium, bank/payment data, check numbers, appliance serial numbers, personal contact information</p>
+          <p><span class="tag tag-blue">4 PII fields redacted</span> prior to structuring per owner review</p>
+        </div>`
+      },
+      buyer: {
+        title: "Buyer Report",
+        icon: "🔑",
+        subtitle: "Plain-language summary for informed decision-making",
+        iconBg: "#F0FDF4",
+        body: `<div class="report-content">
+          <h4>What You Should Know</h4>
+          <p>This is a solid century-old Philadelphia rowhouse with real history and some real work needed. Two big items were addressed recently — good news if you're buying.</p>
+          <h4>Already Fixed (Good News)</h4>
+          <p><span class="tag tag-green">Done</span> Rear roof repaired + flat roof replaced — 20yr warranty in place</p>
+          <p><span class="tag tag-green">Done</span> Electrical panel replaced — old hazardous panel is gone, new 200A panel installed and inspected Dec 2024</p>
+          <h4>What Needs Attention Soon</h4>
+          <p><span class="tag tag-yellow">1–2 Years</span> HVAC furnace — 15 years old, budget $5,500–$8,000 for replacement</p>
+          <p><span class="tag tag-yellow">Soon</span> Kitchen exhaust fan — code violation, permit submitted but not closed yet</p>
+          <p><span class="tag tag-yellow">2026–27</span> Refrigerator + water heater — both nearing end of life</p>
+          <h4>Budget Reality</h4>
+          <p>Immediate costs: low (recent work covers the big items). Near-term 1–3 year budget: ~$8,000–$12,000. Annual maintenance: budget $3,500–$5,000/yr for a house this age.</p>
+          <h4>Red Flags to Ask About</h4>
+          <p><span class="tag tag-red">Ask</span> Kitchen exhaust permit — confirm it closes before closing</p>
+          <p><span class="tag tag-yellow">Note</span> Cast iron drain mains — original 1923, monitor condition</p>
+        </div>`,
+        governance: `<div class="report-content">
+          <h4>✓ Fields Included</h4>
+          <p>Property condition summary, repair history, cost estimates, appliance ages and replacement timelines, permit status (open/closed), financing risk items</p>
+          <h4>✗ Fields Excluded</h4>
+          <p>Owner identity, insurance policy details, premium amounts, bank/payment references, permit numbers (raw), inspector license numbers, contractor payment amounts</p>
+          <p><span class="tag tag-blue">Plain language only</span> — technical jargon minimized for buyer clarity</p>
+        </div>`
+      },
+      inspector: {
+        title: "Insurance Inspector Report",
+        icon: "🛡️",
+        subtitle: "Risk-focused summary for underwriting",
+        iconBg: "#FFF5F5",
+        body: `<div class="report-content">
+          <h4>Risk Summary</h4>
+          <p><span class="tag tag-green">Resolved</span> Electrical — Federal Pacific Stab-Lok panel REPLACED Dec 2024. Square D 200A installed, permit EP-2024-0044821 passed. Insurance surcharge should be removed.</p>
+          <p><span class="tag tag-green">Resolved</span> Roof — Rear slate repaired, EPDM replaced. Carlisle SynTec 20yr warranty active.</p>
+          <p><span class="tag tag-yellow">Open</span> Kitchen exhaust — NOV issued Oct 2024, permit submitted. Monitor for closure.</p>
+          <p><span class="tag tag-yellow">Monitor</span> HVAC — Age 15yr, approaching end of life. Heat exchanger status unconfirmed.</p>
+          <h4>High-Risk Components — Status</h4>
+          <p>Federal Pacific panel: <span class="tag tag-green">Removed</span></p>
+          <p>Knob-and-tube wiring: <span class="tag tag-green">Confirmed inactive, capped Dec 2024</span></p>
+          <p>Cast iron drains: <span class="tag tag-yellow">Original 1923 — monitor</span></p>
+          <h4>Water Damage Risk Factors</h4>
+          <p>Water heater age 7yr (moderate risk). Basement moisture history noted. Sump pump operational.</p>
+          <h4>Flood Zone</h4>
+          <p><span class="tag tag-green">Zone X</span> — Minimal flood hazard. No flood insurance required.</p>
+        </div>`,
+        governance: `<div class="report-content">
+          <h4>✓ Fields Included</h4>
+          <p>Risk level per category, hazard findings, remediation status, permit status, flood zone, existing policy reference, high-risk components, code violation status</p>
+          <h4>✗ Fields Excluded</h4>
+          <p>Owner SSN/identity (redacted), bank account details (redacted), appliance serial numbers, market value framing, buyer-facing narrative, check numbers</p>
+          <p><span class="tag tag-blue">Policy reference included</span> — surcharge removal documentation attached</p>
+        </div>`
+      },
+      contractor: {
+        title: "Contractor Work Order",
+        icon: "🔧",
+        subtitle: "Trade-organized scope with sequencing notes",
+        iconBg: "#FFFBEB",
+        body: `<div class="report-content">
+          <h4>Electrical (Completed — Do Not Duplicate)</h4>
+          <p><span class="tag tag-green">Done</span> Panel replacement (Square D QO 200A) — permit EP-2024-0044821 PASSED Dec 19 2024. Knob-and-tube capped and confirmed inactive in attic.</p>
+          <h4>Mechanical Ventilation (Open)</h4>
+          <p><span class="tag tag-red">Required</span> Kitchen exhaust reroute — interior recirculation to exterior penetration per IRC M1503. Permit pending (unassigned). Pull permit before starting.</p>
+          <h4>HVAC (Upcoming)</h4>
+          <p><span class="tag tag-yellow">Plan</span> Furnace replacement — Carrier, installed 2009, age 15yr. Budget $5,500–$8,000 installed. Note: confirm heat exchanger via pressure test before quoting.</p>
+          <h4>Plumbing (Monitor)</h4>
+          <p>Cast iron drain mains — original 1923. PVC branch lines updated. No active issues. Camera inspection recommended before any floor work.</p>
+          <h4>Sequencing Dependencies</h4>
+          <p>⚠ Kitchen exhaust permit must close before any wall patching in kitchen area.</p>
+          <p>⚠ Attic insulation must not be added until knob-and-tube confirmation documented (done — see permit record).</p>
+          <p>⚠ If EV charger or mini-split planned — 200A panel has capacity, no service upgrade needed.</p>
+        </div>`,
+        governance: `<div class="report-content">
+          <h4>✓ Fields Included</h4>
+          <p>Scope by trade, materials specified, permit numbers and status, prior contractor work, sequencing dependencies, measurements where available, code violations requiring remediation</p>
+          <h4>✗ Fields Excluded</h4>
+          <p>Owner identity and contact, insurance details, payment history, check numbers, market value data, appliance warranty registration details (not in scope)</p>
+          <p><span class="tag tag-blue">Trade-specific only</span> — financial and ownership data fully excluded</p>
+        </div>`
+      }
+    };
+
+    const r = reports[selectedAudience];
+    document.getElementById('reportTitle').textContent = r.title;
+    document.getElementById('reportSubtitle').textContent = r.subtitle;
+    document.getElementById('reportIcon').textContent = r.icon;
+    document.getElementById('reportIcon').style.background = r.iconBg;
+    document.getElementById('reportBody').innerHTML = r.body;
+    document.getElementById('governanceBody').innerHTML = r.governance;
+    document.getElementById('reportLabel').textContent = `Generated Report — ${r.title}`;
+    document.getElementById('reportSection').style.display = 'block';
+    document.getElementById('reportSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    // Reset run button
+    document.getElementById('runBtn').disabled = false;
+    document.getElementById('runBtn').style.background = '';
+    document.getElementById('runBtn').style.cursor = '';
+    document.getElementById('runBtnText').textContent = '▶ Run Pipeline';
+    document.getElementById('runSpinner').classList.remove('visible');
+    pipelineRunning = false;
+
+    log(`Pipeline complete. ${r.title} ready.`, 'ok');
+  }
+</script>
+
+</body>
+</html>
