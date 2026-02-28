@@ -1,19 +1,27 @@
-# Environment — never commit API keys
+# Environment
 .env
+*.env.local
 
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 .venv/
 venv/
+dist/
+*.egg-info/
 
 # Node
 node_modules/
-dist/
+layer2_reporting/dist/
 
-# Generated reports (runtime output)
+# Reports (generated output)
 reports/
 
 # macOS
 .DS_Store
+
+# Editors
+.vscode/
+.idea/
+*.swp
